@@ -1,0 +1,8 @@
+* Example
+- I'm deciding to use tool X over tool Y for reason Z
+
+  Ideally, I can decide if I want to use Y over X later if I find Z to be insufficient for whatever reason
+* Decisions
+- I'm deciding to use PyMongo over Motor because
+  - PyMongo is official
+  - I don't think I have a need for async programming -- this is primarily a scripting project
