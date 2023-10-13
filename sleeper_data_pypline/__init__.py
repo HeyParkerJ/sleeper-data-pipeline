@@ -1,5 +1,5 @@
 from pymongo import DESCENDING
-from sleeper_wrapper import League, Players
+from sleeper_wrapper import League, Players, User
 from dotenv import load_dotenv
 from datetime import datetime
 from mongo import connect, write, read
@@ -11,14 +11,50 @@ load_dotenv()
 def init():
     mongoClient = connect()
 
-    # LeagueDataFetcher = League(get_10g1c_leagueid_by_year(2020))
+    season = 2023
+    LeagueDataFetcher = League(get_10g1c_leagueid_by_year(season))
+
+    roster_id = 7
+    rosters = LeagueDataFetcher.get_rosters()
+
+     
     t = get_highest_bids_of_all_time(10)
-    transform_transactions_to_human_readable(t)
+    transactions = transform_transactions_to_human_readable(t, LeagueDataFetcher)
+    print(json.dumps(transactions))
+
+# There are many times where I'll have a roster id and I want a display name instead
+def get_display_name_from_roster_id(LeagueDataFetcher, roster_id):
+    rosters = LeagueDataFetcher.get_rosters()
+
+    # 2 - rosters.find (or whatever) where roster_id === roster_id
+    owner_id = get_owner_id_from_roster_id(roster_id, rosters)
+
+    # 3 - Get display name with this user/owner_id
+    users = LeagueDataFetcher.get_users()
+    display_name = get_display_name_from_user_id(owner_id, users)
+    return display_name
+
+def get_display_name_from_user_id(user_id, users):
+    display_name = None
+    for user in users:
+        if user["user_id"] == user_id:
+            display_name = user["display_name"]
+    return display_name
+
+# TAKE NOTE - owner_id (from rosters) is the same as user_id (from users)
+def get_owner_id_from_roster_id(roster_id, rosters):
+    owner_id = None
+    for roster in rosters:
+        if roster["roster_id"] == roster_id:
+            owner_id = roster["owner_id"]
+    return owner_id
 
 def get_highest_bids_of_all_time(limit):
     def readFn(collection):
         documents = []
-        cursor = collection.find().sort('settings.waiver_bid', DESCENDING).limit(limit)
+        # TODO - Add a 'claim is successful' part to this filter
+        query = {"status": "complete"}
+        cursor = collection.find(query).sort('settings.waiver_bid', DESCENDING).limit(limit)
         # Note - prob don't need to take docs out of cursor then append to a new list, can refactor
         for document in cursor:
             documents.append(document)
@@ -28,8 +64,9 @@ def get_highest_bids_of_all_time(limit):
     result = read('transactions', readFn)
     return result
 
-def transform_transactions_to_human_readable(transactions):
+def transform_transactions_to_human_readable(transactions, LeagueDataFetcher):
     # Note - the impl described below is just for waiver claims
+    # It would be an enhancement to make it work for trades
 
     # 1 - Loop over each transaction and pull out all keys in `adds` and add them to a list (maybe make this an obj if collision is a possible issue?)
     player_ids = []
@@ -44,25 +81,19 @@ def transform_transactions_to_human_readable(transactions):
     # create a human readable output
     human_readable_transactions = []
     for transaction in transactions:
-        print('faab', transaction.get("settings.waiver_bid"))
-        print('player_id', transaction.get("adds"))
-
         adds = list(transaction.get("adds").keys())[0]
-        print('adds key', adds)
+
+        owner_display_name = get_display_name_from_roster_id(LeagueDataFetcher, transaction.get("roster_ids")[0])
 
         HR_transaction = {
             "faab": transaction["settings"]["waiver_bid"],
             "player_name": player_ids_and_names.get(list(transaction.get("adds").keys())[0]),
-            "owner": get_manager_names_from_ids(transaction.get("roster_ids")[0]),
+            "owner": owner_display_name,
             "date": transform_timestamp_to_human_readable(transaction.get("status_updated"))
         }
         human_readable_transactions.append(HR_transaction)
 
-    print(human_readable_transactions)
-
-def get_manager_names_from_ids(manager_ids):
-    # I need to populate the DB with this info before I can implement
-    print('implement me!')
+    return human_readable_transactions
 
 # player_ids must be a list
 def get_player_names_from_ids(player_ids):
@@ -106,25 +137,6 @@ def get_10g1c_leagueid_by_year(year):
         return 983808897297317888
     else:
         print("Not a valid or known season year provided to get_10g1c_leagueid_by_year", year)
-
-# This isn't going to work the way I want it because of Mongo not really having left-joins
-# What I CAN do is grab the transactions from the last week, then query for those players
-# The high level function could be like "create_dadbot_transaction_payload"
-def query_transactions():
-    def readFn(collection):
-        collection.aggregate([
-            {
-                "$lookup":
-                {
-                    "from": "players",                  # the collection to join with
-                    "localField": "",          # field from the orders collection
-                    "foreignField": "_id",               # field from the products collection
-                    "as": "product_details"              # the array field that will hold the "joined" data
-                }
-            }
-        ])
-        
-    read("transactions", readFn)
 
 def write_players(players, mongoClient):
     players_list = list(players.values())
