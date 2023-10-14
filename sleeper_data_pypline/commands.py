@@ -1,6 +1,5 @@
-import requests
-from mongo import write, read
-from sleeper_wrapper import League
+from pymongo import DESCENDING
+from mongo import read
 
 # Probably won't need this... we just learned about upserting in mongo and will probably use that
 def get_all_league_ids_in_mongo():
@@ -14,4 +13,18 @@ def get_all_league_ids_in_mongo():
         return result
 
 
-    return read('league', myfn)
+    return read('league', myfn) 
+
+def get_highest_bids_of_all_time(limit):
+    def readFn(collection):
+        documents = []
+        query = {"status": "complete"}
+        cursor = collection.find(query).sort('settings.waiver_bid', DESCENDING).limit(limit)
+        # Note - prob don't need to take docs out of cursor then append to a new list, can refactor
+        for document in cursor:
+            documents.append(document)
+
+        return documents
+
+    result = read('transactions', readFn)
+    return result

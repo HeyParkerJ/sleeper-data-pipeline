@@ -1,0 +1,49 @@
+* Example
+- I'm deciding to use tool X over tool Y for reason Z
+
+  Ideally, I can decide if I want to use Y over X later if I find Z to be insufficient for whatever reason
+* Decisions
+- I'm deciding to use PyMongo over Motor because
+  - PyMongo is official
+  - I don't think I have a need for async programming -- this is primarily a scripting project
+
+
+* Things worth figuring out
+- [ ] How will the resulting data be consumed?
+- [ ] Can I generically turn any query into human readable by recursively looking through an Answer's tree for data that need to be transformed, like playerID and Owner/RosterID?
+- [ ] Should I use Python's unofficial private/public nomenclature? Could be useful to identify macro vs micro functions
+
+* Scratchpad for folder organization
+
+** Transforms
+Rename these?
+
+def get_display_name_from_roster_id(LeagueDataFetcher, roster_id):
+def get_display_name_from_user_id(user_id, users):
+def get_owner_id_from_roster_id(roster_id, rosters):
+def transform_transactions_to_human_readable(transactions, LeagueDataFetcher):
+def get_player_names_from_ids(player_ids):
+def transform_timestamp_to_human_readable(timestamp_in_ms):
+def get_10g1c_leagueid_by_year(year):
+
+** helpers utils
+def get_leg(league_data):
+
+** Fetch from sleeper
+def get_players():
+def get_transactions(week, LeagueDataFetcher):
+
+** Queries to mongodb
+def get_highest_bids_of_all_time(limit):
+
+** Writes / Data upkeep
+*** Macro
+def fetch_and_write_transactions(LeagueDataFetcher, mongoClient, throughLeg):
+def write_season(mongoClient, league_data):
+def upsert_missing_transactions():
+*** Micro
+def write_transactions(mongoClient, transactions):
+def write_players(players, mongoClient):
+
+** File utils
+def write_to_file(data, filename):
