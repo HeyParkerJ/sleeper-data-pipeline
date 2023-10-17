@@ -15,11 +15,12 @@ def get_all_league_ids_in_mongo():
 
     return read('league', myfn) 
 
-def get_highest_bids_of_all_time(limit):
+# TODO - this is more of a query than a organism level command
+def get_highest_bids_of_all_time(amount_of_bids):
     def readFn(collection):
         documents = []
         query = {"status": "complete"}
-        cursor = collection.find(query).sort('settings.waiver_bid', DESCENDING).limit(limit)
+        cursor = collection.find(query).sort('settings.waiver_bid', DESCENDING).limit(amount_of_bids)
         # Note - prob don't need to take docs out of cursor then append to a new list, can refactor
         for document in cursor:
             documents.append(document)

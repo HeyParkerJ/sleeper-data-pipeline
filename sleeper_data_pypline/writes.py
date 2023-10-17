@@ -14,8 +14,8 @@ def write_players(players, mongoClient):
         write(mongoClient, 'players', filter_query, player)
 
 # Leg is the current "week"
-def fetch_and_write_transactions(LeagueDataFetcher, mongoClient, throughLeg):
-    for i in range(throughLeg, 0, -1):
+def fetch_and_write_transactions(LeagueDataFetcher, mongoClient, fromLeg, toLeg):
+    for i in range(fromLeg, toLeg, -1):
         transactions = get_transactions(LeagueDataFetcher, i)
         # for each set of transactions, write them
         write_transactions(mongoClient, transactions)
