@@ -47,3 +47,33 @@ def write_players(players, mongoClient):
 
 ** File utils
 def write_to_file(data, filename):
+
+* Thoughts / Scratchpad on the "Matchups" endpoint and how to deal with its data
+- So for a given week, the 'matchups' API returns an array of 10 objects - one for each team in the league
+- We'll need to generate a unique ID for this transaction so we can upsert it into mongodb
+  - We'll likely need to add some data
+  - week
+
+Example typescript type:
+type matchup {
+  starter_points: number[];
+  starters: PlayerID[];
+  roster_id: number;
+  points: number;
+  players_points: Record<PlayerID, number>;
+  players: PlayerID[];
+  matchup_id: number;
+  custom_points: null | number;
+  metadata: NonNativeMetadata;
+}
+
+type NonNativeMetadata {
+  leg: number,
+  league_id: number,
+}
+
+We can create a unique ID by combining (can we hash this?):
+  - leg
+  - league_id
+  - roster_id (this is unique across the spread of matchups)
+  - matchup_id

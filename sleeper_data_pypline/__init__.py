@@ -10,9 +10,7 @@ from utils import write_to_file
 
 load_dotenv()
 
-# TODO - re-Input all matchups into Mongodb
 # TODO - Calculate high scores of the week
-# TODO - calculate winners and losers before inputting to mongo - use custom_points if not null
 def init():
     season = 2022
     league_id = get_10g1c_leagueid_by_year(season)
@@ -23,12 +21,11 @@ def init():
     looping_bounds = get_upper_and_lower_leg(league_data)
     playoff_week_start = get_playoff_week_start(league_data)
 
-    for i in range(17, 16, -1):
-    # for i in range(looping_bounds[1], looping_bounds[0], -1):
+    for i in range(looping_bounds[1], looping_bounds[0], -1):
         matchups = LeagueDataFetcher.get_matchups(i)
 
-        # TODO - This is *very* inefficient, but let's roll with it until its an issue, then we can improve
-        # TODO - edge case not handled: tie
+        # This is *very* inefficient, but let's roll with it until its an issue, then we can improve
+        # Note - Edge case not handled: tie
         for matchup in matchups:
             paired_matchup = next(y for y in matchups if y["matchup_id"] == matchup["matchup_id"] and y["roster_id"] != matchup["roster_id"])
 
