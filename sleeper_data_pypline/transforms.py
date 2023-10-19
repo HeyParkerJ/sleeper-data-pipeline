@@ -20,6 +20,12 @@ def get_display_name_from_user_id(user_id, users):
             display_name = user["display_name"]
     return display_name
 
+# TODO
+def get_display_name(user_id, season, mongoClient):
+    # The idea of this fn is that we'll be able to pass a mongoClient and the season number and get whatever display name is valid for that season
+    # Cross season roster_id -> display_name can be inaccurate if the league structure has changed
+    print('implement me!')
+
 # TAKE NOTE - owner_id (from rosters) is the same as user_id (from users)
 def get_owner_id_from_roster_id(roster_id, rosters):
     owner_id = None
@@ -91,7 +97,9 @@ def transform_timestamp_to_human_readable(timestamp_in_ms):
 
 
 def get_10g1c_leagueid_by_year(year):
-    if year == 2020:
+    if year == 2019:
+        return 473636235902971904
+    elif year == 2020:
         return 603631612793520128
     elif year == 2021:
         return 687728692536893440
@@ -101,4 +109,5 @@ def get_10g1c_leagueid_by_year(year):
         return 983808897297317888
     else:
         print("Not a valid or known season year provided to get_10g1c_leagueid_by_year", year)
+        raise
 
