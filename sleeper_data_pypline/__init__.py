@@ -23,8 +23,10 @@ def init():
     parser_identify = subparsers.add_parser("identify", help="Identify a league member")
     parser_identify.add_argument("number", type=int, choices=range(1, 11), help="An integer between 1 and 10")
 
-    parser_etl = subparsers.add_parser("etl", help="Perform some ETL")
-    parser_etl.add_argument("action", type=str, choices=['draft', 'league'], help="Grab and load draft data")
+    etl_choices = ['draft', 'league', 'transactions', 'matchups', 'players']
+
+    parser_etl = subparsers.add_parser("etl", help="Grab data for a season, upsert it into mongo")
+    parser_etl.add_argument("action", type=str, choices=etl_choices, help="Grab and load draft data")
     parser_etl.add_argument("season", type=int, help="The season (ex: 2022)")
 
     args = parser.parse_args()
@@ -46,21 +48,21 @@ def init():
         LeagueDataFetcher = League(league_id)
         print(get_display_name_from_roster_id(LeagueDataFetcher, args.number))
     if args.command == "etl":
-        mongoClient = connect()
+        MongoClient = connect()
         league_id = get_10g1c_leagueid_by_year(season)
         LeagueDataFetcher = League(league_id)
         if args.action == "league":
-            write_season(mongoClient, LeagueDataFetcher)
+            write_season(LeagueDataFetcher, MongoClient)
         if args.action == "transactions":
             highLeg = 17
             lowLeg = 0
-            fetch_and_write_transactions(LeagueDataFetcher, mongoClient, highLeg, lowLeg)
+            fetch_and_write_transactions(LeagueDataFetcher, MongoClient, highLeg, lowLeg)
         if args.action == "draft":
-            write_draft(mongoClient, args.season)
+            write_draft(LeagueDataFetcher, MongoClient, league_id)
         if args.action == "matchups":
-            fetch_and_push_matchups(LeagueDataFetcher, mongoClient)
+            fetch_and_push_matchups(LeagueDataFetcher, MongoClient)
         if args.action == "players":
-            write_players(mongoClient)
+            write_players(MongoClient)
         else:
             print('ETL action: {} is not a valid action'.format(args.action))
             raise
