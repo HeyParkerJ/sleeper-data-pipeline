@@ -65,8 +65,10 @@ def transform_transactions_to_human_readable(transactions, LeagueDataFetcher):
 
     return human_readable_transactions
 
-# player_ids must be a list
 def get_player_names_from_ids(player_ids):
+    """
+    player_ids: string[] | int[]
+    """
     def readPlayersFn(collection):
         cursor = collection.find({"player_id": {"$in": player_ids}}, {"player_id": 1, "full_name": 1})
         return cursor

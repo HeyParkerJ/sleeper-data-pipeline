@@ -1,27 +1,21 @@
 import json
 import argparse
 import inspect
-from sleeper_wrapper import League, Drafts
+from sleeper_wrapper import League
 from dotenv import load_dotenv
-from mongo import connect, read, write
-from commands import get_all_league_ids_in_mongo, get_highest_bids_of_all_time
-from transforms import get_10g1c_leagueid_by_year, transform_transactions_to_human_readable, get_display_name_from_roster_id
-from fetchers import get_transactions, get_leg
-from writes import fetch_and_write_transactions, write_season
-from utils import write_to_file
+from etl import write_draft, fetch_and_write_transactions, fetch_and_push_matchups, write_season, write_players
+from mongo import connect
+from transforms import get_10g1c_leagueid_by_year, get_display_name_from_roster_id
+from fetchers import get_leg
 
 load_dotenv()
 
-# TODO - backfill 2019 and previous - my data is missing this for some reason
+# TODO - backfill 2019 - my data is missing this for some reason
+# TODO - redo the draft insertions, but add season to the payload
 # TODO - given a season and a roster id, figure out the display_name
 # TODO - Calculate high scores of the week
-# TODO - Add draft data
 # TODO - How many (and which) players were both drafted and started by the championship team in the championship week?
 def init():
-    # league_data = LeagueDataFetcher.get_league()
-
-    season = 2022
-
     parser = argparse.ArgumentParser(description="Sleeper pipeline ETL scripts and data utilities")
 
     subparsers = parser.add_subparsers(dest="command", help="Sub-command help")
@@ -40,45 +34,36 @@ def init():
         "etl"
     ]
 
+    season = args.season
+
     print(f"Action: {args.command}")
     if args.command not in validActions:
         print('Action is not valid')
         raise
-
+    
     if args.command == "identify":
         league_id = get_10g1c_leagueid_by_year(season)
         LeagueDataFetcher = League(league_id)
         print(get_display_name_from_roster_id(LeagueDataFetcher, args.number))
     if args.command == "etl":
         mongoClient = connect()
+        league_id = get_10g1c_leagueid_by_year(season)
+        LeagueDataFetcher = League(league_id)
         if args.action == "league":
-            league_id = get_10g1c_leagueid_by_year(args.season)
-            LeagueDataFetcher = League(league_id)
-            league_data = LeagueDataFetcher.get_league()
-            write_season(mongoClient, league_data)
+            write_season(mongoClient, LeagueDataFetcher)
+        if args.action == "transactions":
+            highLeg = 17
+            lowLeg = 0
+            fetch_and_write_transactions(LeagueDataFetcher, mongoClient, highLeg, lowLeg)
         if args.action == "draft":
-            league_id = get_10g1c_leagueid_by_year(args.season)
-            LeagueDataFetcher = League(league_id)
-            drafts = LeagueDataFetcher.get_all_drafts()
-            if len(drafts) != 1:
-                print('Very unexpected scenario encountedered: This league has >1 draft. LeagueID:', league_id)
-            
-            draft_id = drafts[0]["draft_id"]
-
-            DraftDataFetcher = Drafts(draft_id)
-
-            all_picks = DraftDataFetcher.get_all_picks()
-            draft_details = DraftDataFetcher.get_specific_draft()
-
-            draft_details_filter_query = {draft_id: draft_id}
-            write(mongoClient, 'drafts', draft_details_filter_query, draft_details)
-
-            for pick in all_picks:
-                draft_picks_filter_query = { "draft_id": draft_id, 
-                                             "round": pick["round"], 
-                                             "pick_no": pick["pick_no"] }
-                write(mongoClient, 'draft_picks', draft_picks_filter_query, pick)
-                print('Wrote pick:', pick["round"], pick["pick_no"])
+            write_draft(mongoClient, args.season)
+        if args.action == "matchups":
+            fetch_and_push_matchups(LeagueDataFetcher, mongoClient)
+        if args.action == "players":
+            write_players(mongoClient)
+        else:
+            print('ETL action: {} is not a valid action'.format(args.action))
+            raise
 
 # TODO - Can I check and log out if a transaction was updated vs inserted?
 def upsert_missing_transactions(LeagueDataFetcher, mongoClient):
