@@ -1,9 +1,11 @@
 from sleeper_wrapper import League, Drafts, Players
 from mongo import write
 from transforms import get_10g1c_leagueid_by_year
-from fetchers import get_transactions, get_leg, get_upper_and_lower_leg, get_playoff_week_start
+from fetchers import get_upper_and_lower_leg, get_playoff_week_start
 
-def write_draft(LeagueDataFetcher, MongoClient, league_id):
+# TODO - add season and league_id to this as well...
+# TODO - delete and re-fill all drafts... the filter query was incorrect previously
+def write_draft_and_picks(LeagueDataFetcher, MongoClient, league_id):
     drafts = LeagueDataFetcher.get_all_drafts()
     if len(drafts) != 1:
         print('Very unexpected scenario encountedered: This league has >1 draft. LeagueID:', league_id)
@@ -15,7 +17,7 @@ def write_draft(LeagueDataFetcher, MongoClient, league_id):
     all_picks = DraftDataFetcher.get_all_picks()
     draft_details = DraftDataFetcher.get_specific_draft()
 
-    draft_details_filter_query = {draft_id: draft_id}
+    draft_details_filter_query = {"draft_id": draft_id}
     write(MongoClient, 'drafts', draft_details_filter_query, draft_details)
 
     for pick in all_picks:
@@ -29,16 +31,21 @@ def fetch_and_write_transactions(LeagueDataFetcher, MongoClient, highLeg, lowLeg
     """
     LowLeg should be 0 if you wanna go all the way back
     """
-    def write_transactions(MongoClient, transactions):
+    def write_transactions(MongoClient, transactions, league_id, season):
         for transaction in transactions:
+            # metadata additions to the raw transactions
+            transaction["league_id"] = league_id
+            transaction["season"] = season
+
             trans_id = transaction[ 'transaction_id' ]
             filter_query = { "transaction_id": trans_id }
             write(MongoClient, 'transactions', filter_query, transaction)
 
+    league_data = LeagueDataFetcher.get_league()
     for i in range(highLeg, lowLeg, -1):
         transactions = League.get_transactions(LeagueDataFetcher, i)
         # for each set of transactions, write them
-        write_transactions(MongoClient, transactions)
+        write_transactions(MongoClient, transactions, league_data["league_id"], league_data["season"])
     print('Done fetching and writing transactions')
 
 

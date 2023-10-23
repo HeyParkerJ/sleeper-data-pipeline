@@ -1,17 +1,16 @@
-import json
 import argparse
-import inspect
 from sleeper_wrapper import League
 from dotenv import load_dotenv
-from etl import write_draft, fetch_and_write_transactions, fetch_and_push_matchups, write_season, write_players
+from etl import write_draft_and_picks, fetch_and_write_transactions, fetch_and_push_matchups, write_season, write_players
 from mongo import connect
 from transforms import get_10g1c_leagueid_by_year, get_display_name_from_roster_id
-from fetchers import get_leg
+from fetchers import get_leg, get_upper_and_lower_leg
 
 load_dotenv()
 
+# TODO - add season and leagueid to transactions
 # TODO - backfill 2019 - my data is missing this for some reason
-# TODO - redo the draft insertions, but add season to the payload
+# TODO - backfill week 1 transactions and matchups
 # TODO - given a season and a roster id, figure out the display_name
 # TODO - Calculate high scores of the week
 # TODO - How many (and which) players were both drafted and started by the championship team in the championship week?
@@ -28,6 +27,8 @@ def init():
     parser_etl = subparsers.add_parser("etl", help="Grab data for a season, upsert it into mongo")
     parser_etl.add_argument("action", type=str, choices=etl_choices, help="Grab and load draft data")
     parser_etl.add_argument("season", type=int, help="The season (ex: 2022)")
+    parser_etl.add_argument("--h", type=int, help="High leg (when action will span multiple legs)")
+    parser_etl.add_argument("--l", type=int, help="Low leg (when action will span multiple legs)")
 
     args = parser.parse_args()
 
@@ -53,15 +54,18 @@ def init():
         LeagueDataFetcher = League(league_id)
         if args.action == "league":
             write_season(LeagueDataFetcher, MongoClient)
-        if args.action == "transactions":
-            highLeg = 17
-            lowLeg = 0
+        elif args.action == "transactions":
+            # This is inefficient to fetch the league here and then do it again later when we pass LeagueDataFetcher
+            # Is there a way to pass league_data if it's already been fetched or LeagueDataFetcher if not?
+            legs = get_upper_and_lower_leg(LeagueDataFetcher.get_league())
+            highLeg = args.h or legs[1]
+            lowLeg = args.l or legs[0]
             fetch_and_write_transactions(LeagueDataFetcher, MongoClient, highLeg, lowLeg)
-        if args.action == "draft":
-            write_draft(LeagueDataFetcher, MongoClient, league_id)
-        if args.action == "matchups":
+        elif args.action == "draft":
+            write_draft_and_picks(LeagueDataFetcher, MongoClient, league_id)
+        elif args.action == "matchups":
             fetch_and_push_matchups(LeagueDataFetcher, MongoClient)
-        if args.action == "players":
+        elif args.action == "players":
             write_players(MongoClient)
         else:
             print('ETL action: {} is not a valid action'.format(args.action))
