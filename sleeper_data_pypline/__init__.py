@@ -5,6 +5,7 @@ from etl import write_draft_and_picks, fetch_and_write_transactions, fetch_and_p
 from mongo import connect
 from transforms import get_10g1c_leagueid_by_year, get_display_name_from_roster_id
 from fetchers import get_leg, get_upper_and_lower_leg
+from queries import get_scoring_array
 
 load_dotenv()
 
@@ -26,15 +27,21 @@ def init():
 
     parser_etl = subparsers.add_parser("etl", help="Grab data for a season, upsert it into mongo")
     parser_etl.add_argument("action", type=str, choices=etl_choices, help="Grab and load draft data")
-    parser_etl.add_argument("season", type=int, help="The season (ex: 2022)")
+    parser_etl.add_argument("season", type=str, help="The season (ex: 2022)")
     parser_etl.add_argument("--h", type=int, help="High leg (when action will span multiple legs)")
     parser_etl.add_argument("--l", type=int, help="Low leg (when action will span multiple legs)")
+
+    query_choices = ['time_to_1k']
+    parser_query = subparsers.add_parser("query", help="make a query, answer a question")
+    parser_query.add_argument("action", type=str, choices=query_choices, help="which query do you want to execute?")
+    parser_query.add_argument("season", type=str, help="The season (ex: 2022)")
 
     args = parser.parse_args()
 
     validActions = [
         "identify",
-        "etl"
+        "etl",
+        "query"
     ]
 
     season = args.season
@@ -48,7 +55,7 @@ def init():
         league_id = get_10g1c_leagueid_by_year(season)
         LeagueDataFetcher = League(league_id)
         print(get_display_name_from_roster_id(LeagueDataFetcher, args.number))
-    if args.command == "etl":
+    elif args.command == "etl":
         MongoClient = connect()
         league_id = get_10g1c_leagueid_by_year(season)
         LeagueDataFetcher = League(league_id)
@@ -70,6 +77,10 @@ def init():
         else:
             print('ETL action: {} is not a valid action'.format(args.action))
             raise
+    elif args.command == "query":
+        if args.action == "time_to_1k":
+           MongoClient = connect()
+           get_scoring_array(MongoClient, args.season) 
 
 # TODO - Can I check and log out if a transaction was updated vs inserted?
 def upsert_missing_transactions(LeagueDataFetcher, mongoClient):
