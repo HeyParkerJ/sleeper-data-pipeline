@@ -2,14 +2,14 @@ from mongo import read
 from datetime import datetime
 
 # There are many times where I'll have a roster id and I want a display name instead
-def get_display_name_from_roster_id(LeagueDataFetcher, roster_id):
-    rosters = LeagueDataFetcher.get_rosters()
+def get_display_name_from_roster_id(rosters, users, roster_id):
+    # rosters = LeagueDataFetcher.get_rosters()
+    # users = LeagueDataFetcher.get_users()
 
     # 2 - rosters.find (or whatever) where roster_id === roster_id
     owner_id = get_owner_id_from_roster_id(roster_id, rosters)
 
     # 3 - Get display name with this user/owner_id
-    users = LeagueDataFetcher.get_users()
     display_name = get_display_name_from_user_id(owner_id, users)
     return display_name
 
@@ -99,15 +99,15 @@ def transform_timestamp_to_human_readable(timestamp_in_ms):
 
 
 def get_10g1c_leagueid_by_year(year):
-    if year == 2019:
+    if year == 2019 or year == '2019':
         return 473636235902971904
-    elif year == 2020:
+    elif year == 2020 or year == '2020':
         return 603631612793520128
-    elif year == 2021:
+    elif year == 2021 or year == '2021':
         return 687728692536893440
-    elif year == 2022:
+    elif year == 2022 or year == '2022':
         return 852771702776672256
-    elif year == 2023:
+    elif year == 2023 or year == '2023':
         return 983808897297317888
     else:
         print("Not a valid or known season year provided to get_10g1c_leagueid_by_year", year)

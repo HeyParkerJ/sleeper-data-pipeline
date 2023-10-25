@@ -1,6 +1,7 @@
 from pymongo import DESCENDING
 from mongo import read
 from utils import write_to_file
+from transforms import get_display_name_from_roster_id
 
 
 def get_highest_bids_of_all_time(amount_of_bids):
@@ -17,7 +18,7 @@ def get_highest_bids_of_all_time(amount_of_bids):
     result = read('transactions', readFn)
     return result
 
-def get_scoring_array(MongoClient, season):
+def get_scoring_array_and_calculate_week_of_1k_points(LeagueDataFetcher, MongoClient, season):
     """
     For each season (ex: query for season: 2023, 2022, etc)
     Start at leg 1 and count up
@@ -36,24 +37,26 @@ def get_scoring_array(MongoClient, season):
         return documents
 
     matchups = read(MongoClient, "matchups", readFn)
+
     score_arrays = {}
     for matchup in matchups:
-        print('doing something for...', matchup["leg"], matchup["roster_id"])
         roster_id = matchup["roster_id"]
         if roster_id not in score_arrays:
-            score_arrays[roster_id] = []
+            score_arrays[roster_id] = {"scores": [], "total": 0}
 
-        score_arrays[roster_id].append(matchup["points"])
+        score_arrays[roster_id]["scores"].append(matchup["points"])
+        score_arrays[roster_id]["total"] += matchup["points"]
 
-    print('score_arrays', score_arrays)
-    total = 0
-    for index, score in enumerate( score_arrays[6] ):
-        total += score
-        print('Week', index)
-        print('Score:', score)
-        print('Total:', total)
+        if score_arrays[roster_id]["total"] > 1000 and "week_to_hit_1k" not in score_arrays[roster_id]:
+            score_arrays[roster_id]["week_to_hit_1k"] = matchup["leg"]
 
-    # write_to_file(score_arrays, "demo_score_arrays.json")
-    # scoreArrays = {}
-    # for matchup in matchups:
-    #     scoreArrays[matchup["roster_id"]]
+
+    rosters = LeagueDataFetcher.get_rosters()
+    users = LeagueDataFetcher.get_users()
+
+    result = {}
+    for key in score_arrays:
+        name = get_display_name_from_roster_id(rosters, users, key)    
+        result[name] = score_arrays[key]
+
+    return result

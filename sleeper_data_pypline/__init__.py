@@ -1,18 +1,18 @@
 import argparse
+import json
 from sleeper_wrapper import League
 from dotenv import load_dotenv
 from etl import write_draft_and_picks, fetch_and_write_transactions, fetch_and_push_matchups, write_season, write_players
 from mongo import connect
 from transforms import get_10g1c_leagueid_by_year, get_display_name_from_roster_id
 from fetchers import get_leg, get_upper_and_lower_leg
-from queries import get_scoring_array
+from queries import get_scoring_array_and_calculate_week_of_1k_points
 
 load_dotenv()
 
-# TODO - add season and leagueid to transactions
-# TODO - backfill 2019 - my data is missing this for some reason
-# TODO - backfill week 1 transactions and matchups
+# TODO - can I create an effective 'scores' csv export that lets me crunch data faster?
 # TODO - given a season and a roster id, figure out the display_name
+  # Can/should I just add a mapping of roster_id::display_name::owner_id/etc to the 'league' collection?
 # TODO - Calculate high scores of the week
 # TODO - How many (and which) players were both drafted and started by the championship team in the championship week?
 def init():
@@ -79,14 +79,10 @@ def init():
             raise
     elif args.command == "query":
         if args.action == "time_to_1k":
+           league_id = get_10g1c_leagueid_by_year(season)
+           LeagueDataFetcher = League(league_id)
            MongoClient = connect()
-           get_scoring_array(MongoClient, args.season) 
+           result = get_scoring_array_and_calculate_week_of_1k_points(LeagueDataFetcher, MongoClient, args.season) 
+           print(json.dumps(result, indent=4))
 
-# TODO - Can I check and log out if a transaction was updated vs inserted?
-def upsert_missing_transactions(LeagueDataFetcher, mongoClient):
-    league_data = LeagueDataFetcher.get_league()
-    fromLeg = get_leg(league_data)
-    toLeg = fromLeg - 2 # go back 2 weeks
-    fetch_and_write_transactions(LeagueDataFetcher, mongoClient, fromLeg, toLeg)
-        
 init()
