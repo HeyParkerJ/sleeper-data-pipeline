@@ -2,6 +2,25 @@
 
 Grab data from sleeper.app via the [sleeper-api-wrapper](https://github.com/dtsong/sleeper-api-wrapper/) and put it in a nonrelational database for further querying in other projects
 
+# How to run
+
+`poetry shell` is a command used within the Poetry package manager for Python. It creates a virtual environment (virtualenv) and activates it for the current shell session. This means that any Python packages installed or used within that shell session will be isolated from the system-wide Python installation, preventing conflicts and ensuring a clean environment for your projects.
+
+```
+poetry shell
+```
+
+Inspect commands available
+
+```
+python sleeper_data_pypline/__init__.py --help
+```
+
+Run identify command
+```
+python sleeper_data_pypline/__init__.py identify 1 2022
+```
+
 ## Design
 There are two primary things that the code in this repo does:
 
