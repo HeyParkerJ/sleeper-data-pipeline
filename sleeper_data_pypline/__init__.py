@@ -23,6 +23,7 @@ def init():
 
     parser_identify = subparsers.add_parser("identify", help="Identify a league member")
     parser_identify.add_argument("number", type=int, choices=range(1, 11), help="An integer between 1 and 10")
+    parser_identify.add_argument("season", type=str, help="The season (ex: 2022)")
 
     etl_choices = ['draft', 'league', 'transactions', 'matchups', 'players', 'playoffs']
 
@@ -55,7 +56,9 @@ def init():
     if args.command == "identify":
         league_id = get_10g1c_leagueid_by_year(season)
         LeagueDataFetcher = League(league_id)
-        print(get_display_name_from_roster_id(LeagueDataFetcher, args.number))
+        rosters = LeagueDataFetcher.get_rosters()
+        users = LeagueDataFetcher.get_users()
+        print(get_display_name_from_roster_id(rosters, users, args.number))
     elif args.command == "etl":
         MongoClient = connect()
         league_id = get_10g1c_leagueid_by_year(season)
