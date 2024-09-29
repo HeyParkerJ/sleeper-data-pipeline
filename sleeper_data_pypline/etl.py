@@ -3,8 +3,6 @@ from mongo import write
 from transforms import get_10g1c_leagueid_by_year
 from fetchers import get_upper_and_lower_leg, get_playoff_week_start
 
-# TODO - add season and league_id to this as well...
-# TODO - delete and re-fill all drafts... the filter query was incorrect previously
 def write_draft_and_picks(LeagueDataFetcher, MongoClient, league_id):
     drafts = LeagueDataFetcher.get_all_drafts()
     if len(drafts) != 1:
@@ -21,11 +19,13 @@ def write_draft_and_picks(LeagueDataFetcher, MongoClient, league_id):
     write(MongoClient, 'drafts', draft_details_filter_query, draft_details)
 
     for pick in all_picks:
+        pick["league_id"] = str(league_id)
+        pick["season"] = draft_details["season"]
+
         draft_picks_filter_query = { "draft_id": draft_id, 
                                         "round": pick["round"], 
                                         "pick_no": pick["pick_no"] }
         write(MongoClient, 'draft_picks', draft_picks_filter_query, pick)
-        print('Wrote pick:', pick["round"], pick["pick_no"])
 
 def fetch_and_write_transactions(LeagueDataFetcher, MongoClient, highLeg, lowLeg):
     """

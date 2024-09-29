@@ -1,0 +1,85 @@
+[
+    {
+        "t2": 7,
+        "t1": 1,
+        "w": null,
+        "l": null,
+        "round": 1,
+        "match_id": 1
+    },
+    {
+        "t2": 3,
+        "t1": 2,
+        "w": null,
+        "l": null,
+        "r": 1,
+        "m": 2
+    },
+    {
+        "t2_from": {
+            "w": 1
+        },
+        "t2": null,
+        "t1": 6,
+        "w": null,
+        "l": null,
+        "r": 2,
+        "m": 3
+    },
+    {
+        "t2_from": {
+            "w": 2
+        },
+        "t2": null,
+        "t1": 10,
+        "w": null,
+        "l": null,
+        "r": 2,
+        "m": 4
+    },
+    {
+        "t1_from": {
+            "l": 1
+        },
+        "t2_from": {
+            "l": 2
+        },
+        "t2": null,
+        "t1": null,
+        "w": null,
+        "l": null,
+        "r": 2,
+        "m": 5,
+        "p": 5
+    },
+    {
+        "t1_from": {
+            "w": 3
+        },
+        "t2_from": {
+            "w": 4
+        },
+        "t2": null,
+        "t1": null,
+        "w": null,
+        "l": null,
+        "r": 3,
+        "m": 6,
+        "p": 1
+    },
+    {
+        "t1_from": {
+            "l": 3
+        },
+        "t2_from": {
+            "l": 4
+        },
+        "t2": null,
+        "t1": null,
+        "w": null,
+        "l": null,
+        "r": 3,
+        "m": 7,
+        "p": 3
+    }
+]

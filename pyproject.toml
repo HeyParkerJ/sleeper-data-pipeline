@@ -12,6 +12,7 @@ sleeper-api-wrapper = "^1.0.7"
 pymongo = "3.11"
 python-dotenv = "^1.0.0"
 dnspython = {extras = ["srv"], version = "^2.3.0"}
+pylint = "^3.0.2"
 
 
 [build-system]
