@@ -1,0 +1,51 @@
+========================================
+Available commands: ['identify', 'etl', 'query']
+========================================
+Calling --help for argument: identify
+========================================
+usage: __init__.py identify [-h] {1,2,3,4,5,6,7,8,9,10} season
+
+positional arguments:
+  {1,2,3,4,5,6,7,8,9,10}
+                        An integer between 1 and 10
+  season                The season (ex: 2022)
+
+options:
+  -h, --help            show this help message and exit
+
+
+
+========================================
+Calling --help for argument: etl
+========================================
+usage: __init__.py etl [-h] [--h H] [--l L]
+                       {draft,league,transactions,matchups,players,playoffs}
+                       season
+
+positional arguments:
+  {draft,league,transactions,matchups,players,playoffs}
+                        Grab and load draft data
+  season                The season (ex: 2022)
+
+options:
+  -h, --help            show this help message and exit
+  --h H                 High leg (when action will span multiple legs)
+  --l L                 Low leg (when action will span multiple legs)
+
+
+
+========================================
+Calling --help for argument: query
+========================================
+usage: __init__.py query [-h] {time_to_1k,highest_faab_bids} season
+
+positional arguments:
+  {time_to_1k,highest_faab_bids}
+                        which query do you want to execute?
+  season                The season (ex: 2022)
+
+options:
+  -h, --help            show this help message and exit
+
+
+
