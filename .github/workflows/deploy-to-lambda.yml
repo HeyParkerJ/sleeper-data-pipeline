@@ -1,0 +1,39 @@
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write # this is required for requesting the JWT for OIDC
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with: 
+          role-to-assume: arn:aws:iam::648295097384:role/github_actions_heyparkerj_role
+          region: us-west-2
+
+      - name: Create a ZIP archive
+        run: zip -r sleeper-data-pipeline.zip .
+
+      - name: Upload the ZIP file to S3
+        uses: aws-actions/s3-upload@v1
+        with:
+          bucket: your-s3-bucket-name
+          key: lambda_function.zip
+          file: sleeper-data-pipeline.zip
+
+      - name: Update the Lambda function
+        uses: aws-actions/aws-lambda@v1
+        with:
+          function-name: arn:aws:lambda:us-west-2:648295097384:function:sleeper-data-pipeline-backfill
+          package-type: Zip
+          s3-bucket: sleeper-data-pipeline-backfill-bucket
+          s3-key: lambda_function.zip
