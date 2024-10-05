@@ -18,7 +18,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with: 
           role-to-assume: arn:aws:iam::648295097384:role/github_actions_heyparkerj_role
-          region: us-west-2
+          aws-region: us-west-2
 
       - name: Create a ZIP archive
         run: zip -r sleeper-data-pipeline.zip .
