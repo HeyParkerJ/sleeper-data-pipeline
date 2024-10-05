@@ -23,18 +23,25 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.11" 
-      - name: Set up Poetry
-        run: |
-          export POETRY_HOME=/opt/poetry
-          python3 -m venv $POETRY_HOME
-          $POETRY_HOME/bin/pip install poetry==1.2.0
-          $POETRY_HOME/bin/poetry --version
+      # - name: Set up Poetry
+      #   run: |
+      #     export POETRY_HOME=/opt/poetry
+      #     python3 -m venv $POETRY_HOME
+      #     $POETRY_HOME/bin/pip install poetry==1.2.0
+      #     $POETRY_HOME/bin/poetry --version
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
       - name: Build Project
         run: |
-          $POETRY_HOME/bin/poetry install --only main --sync 
-          $POETRY_HOME/bin/poetry shell
-          $POETRY_HOME/bin/poetry build
-          $POETRY_HOME/bin/poetry run pip install --upgrade -t package dist/*.whl
+          poetry install --only main --sync --no-interaction
+          poetry shell
+          poetry build
+          poetry run pip install --upgrade -t package dist/*.whl
           cd package ; zip -r ../artifact.zip . -x '*.pyc'
 
           # mkdir -p dist/lambda-package
