@@ -39,7 +39,6 @@ jobs:
       - name: Build Project
         run: |
           poetry install --only main --sync --no-interaction
-          # poetry shell
           poetry build
           poetry run pip install --upgrade -t package dist/*.whl
           cd package ; zip -r ../artifact.zip . -x '*.pyc'
@@ -56,7 +55,7 @@ jobs:
       - name: Upload the ZIP file to S3
         run : |
           ls -laF
-          aws s3 sync artifact.zip s3://sleeper-data-pipeline-backfill-bucket --delete
+          aws s3 sync ./artifact.zip s3://sleeper-data-pipeline-backfill-bucket --delete
 
       # - name: Update the Lambda function
       #   uses: aws-actions/aws-lambda@v1
