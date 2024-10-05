@@ -24,16 +24,13 @@ jobs:
         run: zip -r sleeper-data-pipeline.zip .
 
       - name: Upload the ZIP file to S3
-        uses: aws-actions/s3-upload@v1
-        with:
-          bucket: your-s3-bucket-name
-          key: lambda_function.zip
-          file: sleeper-data-pipeline.zip
+        run : |
+          aws s3 sync sleeper-data-pipeline.zip s3://sleeper-data-pipeline-backfill-bucket --delete
 
-      - name: Update the Lambda function
-        uses: aws-actions/aws-lambda@v1
-        with:
-          function-name: arn:aws:lambda:us-west-2:648295097384:function:sleeper-data-pipeline-backfill
-          package-type: Zip
-          s3-bucket: sleeper-data-pipeline-backfill-bucket
-          s3-key: lambda_function.zip
+      # - name: Update the Lambda function
+      #   uses: aws-actions/aws-lambda@v1
+      #   with:
+      #     function-name: arn:aws:lambda:us-west-2:648295097384:function:sleeper-data-pipeline-backfill
+      #     package-type: Zip
+      #     s3-bucket: sleeper-data-pipeline-backfill-bucket
+      #     s3-key: lambda_function.zip
