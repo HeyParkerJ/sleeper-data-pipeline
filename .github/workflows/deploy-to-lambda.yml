@@ -12,20 +12,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with: 
           role-to-assume: arn:aws:iam::648295097384:role/github_actions_heyparkerj_role
           aws-region: us-west-2
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11" 
+      - name: Set up Poetry
+        run: |
+          export POETRY_HOME=/opt/poetry
+          python3 -m venv $POETRY_HOME
+          $POETRY_HOME/bin/pip install poetry==1.2.0
+          $POETRY_HOME/bin/poetry --version
+      - name: Build Project
+        run: |
+          poetry install --only main --sync 
+          poetry shell
+          poetry build
+          poetry run pip install --upgrade -t package dist/*.whl
+          cd package ; zip -r ../artifact.zip . -x '*.pyc'
 
-      - name: Create a ZIP archive
-        run: zip -r sleeper-data-pipeline.zip .
+          # mkdir -p dist/lambda-package
+          # cp "$(poetry config --list | grep 'cache-dir =' | sed -n '1s/.*"\([^"]*\)".*/\1/p')" dist/lambda-package"
+          # cp --recur
+          # poetry build
+          # poetry run pip install --upgrade -t package dist/*.whl
+
+      # - name: Create a ZIP archive
+      #   run: zip -r sleeper-data-pipeline.zip .
 
       - name: Upload the ZIP file to S3
         run : |
-          aws s3 sync sleeper-data-pipeline.zip s3://sleeper-data-pipeline-backfill-bucket --delete
+          ls -laF
+          aws s3 sync artifact.zip s3://sleeper-data-pipeline-backfill-bucket --delete
 
       # - name: Update the Lambda function
       #   uses: aws-actions/aws-lambda@v1
