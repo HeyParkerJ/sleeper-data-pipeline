@@ -41,8 +41,8 @@ jobs:
           poetry install --only main --sync --no-interaction
           poetry build
           # poetry run pip install --upgrade -t package dist/*.whl
-          # cd package ; zip -r ./artifact.zip . -x '*.pyc'
+          # cd package ; zip -r ../dist/artifact.zip . -x '*.pyc'
       - name: Upload the ZIP file to S3
         run : |
-          ls -laF
+          ls -laF ./dist
           aws s3 sync ./dist s3://sleeper-data-pipeline-backfill-bucket --delete
