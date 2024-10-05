@@ -29,10 +29,12 @@ jobs:
           python3 -m venv $POETRY_HOME
           $POETRY_HOME/bin/pip install poetry==1.2.0
           $POETRY_HOME/bin/poetry --version
-          poetry install --only main --sync 
-          poetry shell
-          poetry build
-          poetry run pip install --upgrade -t package dist/*.whl
+      - name: Build Project
+        run: |
+          $POETRY_HOME/bin/poetry install --only main --sync 
+          $POETRY_HOME/bin/poetry shell
+          $POETRY_HOME/bin/poetry build
+          $POETRY_HOME/bin/poetry run pip install --upgrade -t package dist/*.whl
           cd package ; zip -r ../artifact.zip . -x '*.pyc'
 
           # mkdir -p dist/lambda-package
