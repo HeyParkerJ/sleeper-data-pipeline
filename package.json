@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx esbuild src/handler.ts -y --bundle --platform=node --outfile=dist/handler.js"
+
   },
   "keywords": [],
   "author": "",
