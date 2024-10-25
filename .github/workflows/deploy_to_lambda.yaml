@@ -22,10 +22,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-            node-version: "23.x"
+            node-version: "18.x"
       - name: Install Dependencies
         run: npm install
       - name: Build Project
         run: npm run build
+      - name: Zip dist
+        run: zip -r ./dist/artifact.zip ./dist -x
       - name: Upload the ZIP file to S3
         run : aws s3 sync ./dist s3://sleeper-data-pipeline-backfill-bucket --delete
