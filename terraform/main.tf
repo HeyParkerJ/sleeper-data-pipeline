@@ -56,8 +56,8 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 resource "aws_s3_object" "lambda_code" {
   bucket = aws_s3_bucket.lambda_bucket.id
   key    = "lambda.zip"
-  source = "${path.module}/../dist/function.zip"  # Go up one level and into dist directory
-  etag   = filemd5("${path.module}/../dist/function.zip")
+  source = "${path.module}/dist/function.zip"  # Go up one level and into dist directory
+  etag   = filemd5("${path.module}/dist/function.zip")
   # source = data.archive_file.lambda_code.output_path
 }
 
