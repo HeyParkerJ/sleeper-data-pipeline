@@ -21,12 +21,6 @@ import {
   id = "/aws/lambda/knowyourleague_backfill_lambda"  # This must match the log group id
 }
 
-# Import existing Lambda
-import {
-  to = aws_lambda_function.backfill_lambda
-  id = "knowyourleague_backfill_lambda"
-}
-
 # Create/Import S3 bucket for Lambda code
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "knowyourleague-backfill-lambda-bucket"
