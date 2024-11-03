@@ -15,6 +15,18 @@ import {
   id = "knowyourleague_backfill_lambda"
 }
 
+# Import existing CloudWatch Log Group
+import {
+  to = aws_cloudwatch_log_group.lambda_logs
+  id = "/aws/lambda/knowyourleague_backfill_lambda"  # This must match the log group id
+}
+
+# Import existing Lambda
+import {
+  to = aws_lambda_function.backfill_lambda
+  id = "knowyourleague_backfill_lambda"
+}
+
 # Create/Import S3 bucket for Lambda code
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "knowyourleague-backfill-lambda-bucket"
