@@ -35,12 +35,12 @@ jobs:
       - name: Build application
         run: npm run build
         
-      # - name: Upload to S3
-      #   run: |
-      #     zip -r function.zip ./dist
-      #     aws s3 cp function.zip s3://${S3_BUCKET}/function.zip
-      #   env:
-      #     S3_BUCKET: "knowyourleague_backfill_lambda_bucket"
+      - name: Zip file
+        run: |
+          zip -r function.zip ./dist
+        # env:
+        #   S3_BUCKET: "knowyourleague_backfill_lambda_bucket"
+        # aws s3 cp function.zip s3://${S3_BUCKET}/function.zip
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
