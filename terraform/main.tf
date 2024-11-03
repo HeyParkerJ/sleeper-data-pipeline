@@ -56,8 +56,8 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 resource "aws_s3_object" "lambda_code" {
   bucket = aws_s3_bucket.lambda_bucket.id
   key    = "lambda.zip"
-  source = "${path.module}/dist/function.zip"  # Go up one level and into dist directory
-  etag   = filemd5("${path.module}/dist/function.zip")
+  source = "${path.module}/../dist/function.zip"  # Go up one level and into dist directory
+  etag   = filemd5("${path.module}/../dist/function.zip")
   # source = data.archive_file.lambda_code.output_path
 }
 
@@ -70,7 +70,7 @@ resource "aws_lambda_function" "backfill_lambda" {
   s3_key    = aws_s3_object.lambda_code.key
   
   runtime = "nodejs18.x"  # Adjust based on your code's runtime
-  handler = "${path.module}/dist/handler.lambda_handler"  # Adjust based on your code's entry point
+  handler = "${path.module}/../dist/handler.lambda_handler"  # Adjust based on your code's entry point
   
   role = aws_iam_role.lambda_role.arn
   

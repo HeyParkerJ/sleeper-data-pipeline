@@ -37,7 +37,7 @@ jobs:
         
       - name: Zip file
         run: |
-          zip -r function.zip ./dist
+          zip -r ./dist/function.zip ./dist
         # env:
         #   S3_BUCKET: "knowyourleague_backfill_lambda_bucket"
         # aws s3 cp function.zip s3://${S3_BUCKET}/function.zip
