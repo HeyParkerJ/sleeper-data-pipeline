@@ -9,6 +9,12 @@ import {
   id = "knowyourleague-backfill-lambda-bucket"
 }
 
+# Import existing Lambda
+import {
+  to = aws_lambda_function.backfill_lambda
+  id = "knowyourleague_backfill_lambda"
+}
+
 # Create/Import S3 bucket for Lambda code
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "knowyourleague-backfill-lambda-bucket"
@@ -72,7 +78,7 @@ resource "aws_lambda_function" "backfill_lambda" {
   s3_key    = aws_s3_object.lambda_code.key
   
   runtime = "nodejs18.x"
-  handler = "handler.lambda_handler"
+  handler = "${path.module}/../dist/handler.lambda_handler"
   
   role = aws_iam_role.lambda_role.arn
   
