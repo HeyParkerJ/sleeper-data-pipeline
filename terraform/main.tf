@@ -3,28 +3,30 @@ provider "aws" {
   region = "us-west-2"
 }
 
-# Create S3 bucket for Lambda code
+# Import existing S3 bucket
+import {
+  to = aws_s3_bucket.lambda_bucket
+  id = "knowyourleague-backfill-lambda-bucket"
+}
+
+# Create/Import S3 bucket for Lambda code
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "knowyourleague-backfill-lambda-bucket"
-
   tags = {
     Name        = "KnowYourLeague Lambda Code Bucket"
     Environment = "production"
   }
 }
 
-# Enable versioning on the S3 bucket
-resource "aws_s3_bucket_versioning" "lambda_bucket_versioning" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-  versioning_configuration {
-    status = "Enabled"
-  }
+# Import existing IAM role
+import {
+  to = aws_iam_role.lambda_role
+  id = "knowyourleague_backfill_lambda_role"
 }
 
-# Create IAM role for Lambda
+# Create/Import IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "knowyourleague_backfill_lambda_role"
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -39,26 +41,26 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+# Enable versioning on the S3 bucket
+resource "aws_s3_bucket_versioning" "lambda_bucket_versioning" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 # Attach basic Lambda execution policy
 resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role.lambda_role.name
 }
 
-# # Archive the Lambda code
-# data "archive_file" "lambda_code" {
-#   type        = "zip"
-#   source_dir  = "${path.module}/lambda"  # Directory containing your Lambda code
-#   output_path = "${path.module}/lambda.zip"
-# }
-
 # Upload the Lambda code to S3
 resource "aws_s3_object" "lambda_code" {
   bucket = aws_s3_bucket.lambda_bucket.id
   key    = "lambda.zip"
-  source = "${path.module}/../dist/function.zip"  # Go up one level and into dist directory
+  source = "${path.module}/../dist/function.zip"
   etag   = filemd5("${path.module}/../dist/function.zip")
-  # source = data.archive_file.lambda_code.output_path
 }
 
 # Create Lambda function
@@ -69,8 +71,8 @@ resource "aws_lambda_function" "backfill_lambda" {
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_code.key
   
-  runtime = "nodejs18.x"  # Adjust based on your code's runtime
-  handler = "${path.module}/../dist/handler.lambda_handler"  # Adjust based on your code's entry point
+  runtime = "nodejs18.x"
+  handler = "handler.lambda_handler"
   
   role = aws_iam_role.lambda_role.arn
   
