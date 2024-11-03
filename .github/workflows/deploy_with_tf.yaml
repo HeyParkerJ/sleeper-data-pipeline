@@ -19,8 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v1
         with: 
           role-to-assume: arn:aws:iam::648295097384:role/github_actions_heyparkerj_role
           aws-region: us-west-2 
