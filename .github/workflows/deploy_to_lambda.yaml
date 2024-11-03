@@ -30,4 +30,4 @@ jobs:
       - name: Zip dist
         run: zip -r ./dist/function.zip ./dist/
       - name: Upload the ZIP file to S3
-        run : aws s3 cp ./dist/function.zip s3://sleeper-data-pipeline-backfill-bucket/lambda/function.zip --delete
+        run : aws s3 cp ./dist/function.zip s3://sleeper-data-pipeline-backfill-bucket/lambda/function.zip
