@@ -1,3 +1,5 @@
+// NOTE: AI generated, not confirmed to be good
+
 export type LeagueStatus = 'pre_draft' | 'drafting' | 'in_season' | 'complete';
 
 export type SportType = 'nfl' | 'nba' | 'mlb'; // Expanded for other sports Sleeper supports
