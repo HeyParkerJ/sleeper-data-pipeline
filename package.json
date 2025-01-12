@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx -y esbuild src/handler.ts --bundle --platform=node --outfile=dist/handler.js",
-    "build-local": "npx -y esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js",
+    "build-local": "npx -y esbuild src/index.ts --bundle --platform=node --packages=external --outfile=dist/index.js",
     "build-local-test": "node -r dotenv/config -r esbuild-register src/index.ts",
     "dev": "npm run build-local && node -r dotenv/config dist/index.js"
   },
@@ -22,10 +22,10 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.46.1",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "mongodb": "^6.10.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "tunnel-ssh": "^5.2.0"
   }
 }
